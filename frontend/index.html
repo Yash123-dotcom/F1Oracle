@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/3/33/F1.svg" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Oracle Pitwall: Advanced F1 Race Strategy Simulation & Real-time Telemetry Analysis System." />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;0,900;1,700&display=swap" rel="stylesheet">
+    
+    <title>ORACLE PITWALL // Live Strategy</title>
+    
+    <style>
+      /* CRITICAL FIX: Body is transparent to let the 3D Canvas (z-index: 0) show through */
+      body { margin: 0; background: transparent; overflow: hidden; }
+      
+      /* Fallback black background for the HTML document */
+      html { background: #000000; } 
+      
+      /* Disables "rubber-banding" scroll on Mac/iOS */
+      html, body { overscroll-behavior-y: contain; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
