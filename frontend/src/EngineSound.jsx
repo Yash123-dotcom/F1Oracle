@@ -1,59 +1,48 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function EngineSound() {
   const [isMuted, setIsMuted] = useState(true)
   const audioCtxRef = useRef(null)
   const oscRef = useRef(null)
   const gainRef = useRef(null)
-  const lfoRef = useRef(null) // Low Frequency Oscillator for the "rumble"
+  const lfoRef = useRef(null)
 
   const toggleSound = () => {
-    if (isMuted) {
-      startEngine()
-    } else {
-      stopEngine()
-    }
+    if (isMuted) startEngine(); else stopEngine()
     setIsMuted(!isMuted)
   }
 
   const startEngine = () => {
-    // 1. Create Audio Context
     const AudioContext = window.AudioContext || window.webkitAudioContext
     const ctx = new AudioContext()
     audioCtxRef.current = ctx
 
-    // 2. The "Engine" (Sawtooth wave sounds buzzy/mechanical)
     const osc = ctx.createOscillator()
-    osc.type = 'sawtooth' 
-    osc.frequency.value = 60 // 60Hz = Low idle rumble
+    osc.type = 'sawtooth'
+    osc.frequency.value = 60
 
-    // 3. The "Rumble" (LFO modulates pitch slightly)
     const lfo = ctx.createOscillator()
     lfo.type = 'sine'
-    lfo.frequency.value = 8 // 8Hz vibration speed
+    lfo.frequency.value = 8
     const lfoGain = ctx.createGain()
-    lfoGain.gain.value = 5 // Depth of vibration
+    lfoGain.gain.value = 5
     lfo.connect(lfoGain)
-    lfoGain.connect(osc.frequency) // Connect rumble to engine pitch
+    lfoGain.connect(osc.frequency)
 
-    // 4. Filter (Muffles the harsh buzz to sound like it's in a garage)
     const filter = ctx.createBiquadFilter()
     filter.type = 'lowpass'
-    filter.frequency.value = 400 
+    filter.frequency.value = 400
 
-    // 5. Volume Control
     const gain = ctx.createGain()
-    gain.gain.value = 0.15 // Keep it subtle background noise
-    
-    // Connect the chain: LFO -> Osc -> Filter -> Gain -> Speakers
+    gain.gain.value = 0.12
+
     osc.connect(filter)
     filter.connect(gain)
     gain.connect(ctx.destination)
-    lfo.start()
-    osc.start()
+    lfo.start(); osc.start()
 
-    // Store refs to stop them later
     oscRef.current = osc
     gainRef.current = gain
     lfoRef.current = lfo
@@ -61,36 +50,40 @@ export default function EngineSound() {
 
   const stopEngine = () => {
     if (audioCtxRef.current) {
-      // Smooth fade out
       gainRef.current.gain.exponentialRampToValueAtTime(0.001, audioCtxRef.current.currentTime + 0.5)
       setTimeout(() => {
-        oscRef.current.stop()
-        lfoRef.current.stop()
-        audioCtxRef.current.close()
+        oscRef.current?.stop()
+        lfoRef.current?.stop()
+        audioCtxRef.current?.close()
       }, 500)
     }
   }
 
   return (
-    <button 
+    <motion.button
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
       onClick={toggleSound}
+      className="relative flex items-center gap-2 px-4 py-1.5 rounded-lg text-[0.7rem] font-semibold cursor-pointer overflow-hidden transition-all duration-300"
       style={{
-        background: 'rgba(255, 255, 255, 0.1)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        borderRadius: '50px',
-        padding: '8px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        color: isMuted ? '#888' : '#e10600',
-        cursor: 'pointer',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        transition: 'all 0.3s'
-      }}
-    >
-      {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="animate-pulse"/>}
-      {isMuted ? "START ENGINE" : "LIVE AUDIO"}
-    </button>
+        fontFamily: 'Space Grotesk, sans-serif',
+        background: isMuted ? 'rgba(255,255,255,0.05)' : 'rgba(225,6,0,0.12)',
+        border: isMuted ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(225,6,0,0.4)',
+        color: isMuted ? 'rgba(255,255,255,0.4)' : '#e10600',
+        boxShadow: isMuted ? 'none' : '0 0 15px rgba(225,6,0,0.2)',
+      }}>
+      {isMuted
+        ? <VolumeX size={14} />
+        : <Volume2 size={14} className="animate-pulse" />
+      }
+      <span className="tracking-[0.1em] uppercase text-[0.62rem]">
+        {isMuted ? 'Engine Off' : 'Live Audio'}
+      </span>
+      {/* Active glow shimmer */}
+      {!isMuted && (
+        <div className="absolute inset-0 opacity-20"
+          style={{ background: 'linear-gradient(90deg, transparent, #e10600, transparent)', animation: 'border-march 2s linear infinite', backgroundSize: '200% 100%' }} />
+      )}
+    </motion.button>
   )
 }
